@@ -1,4 +1,4 @@
-@extends('Layout.app')
+@extends('layouts.app')
 
 @section('title') Create @endsection
 
@@ -17,9 +17,10 @@
 
         <div class="mb-3">
             <label  class="form-label">Post Creator</label>
-            <select name="post_by" class="form-control">
-                <option value="ahmed">Ahmed</option>
-                <option value="mohamed">Mohamed</option>
+            <select name="user_id" class="form-control">
+                @foreach($users as $user)
+                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                @endforeach
             </select>
         </div>
 
