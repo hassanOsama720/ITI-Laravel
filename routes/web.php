@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\PostsController;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,3 +37,68 @@ Route::put('/posts/comments/{comment}', [CommentsController::class, 'update']) -
 Auth::routes();
 
 Route::get('/home', [PostsController::class, 'index'])->name('home');
+
+use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
+
+Route::get('/auth/redirect', function () {
+    return Socialite::driver('github')->redirect();
+});
+
+Route::get('/auth/callback', function () {
+    $githubUser = Socialite::driver('github')->user();
+
+    // if user exists whithout github token, update it
+    $user = User::where('email', $githubUser->getEmail())->first();
+    if ($user) {
+        $user->github_token = $githubUser->token;
+        $user->github_refresh_token = $githubUser->refreshToken;
+        $user->save();
+    } else {
+        $user = new User();
+        $user->name = $githubUser->getName();
+        $user->email = $githubUser->getEmail();
+        $user->github_id = $githubUser->getId();
+        $user->password = Hash::make(Str::random(24));
+        $user->github_token = $githubUser->token;
+        $user->github_refresh_token = $githubUser->refreshToken;
+        $user->save();
+    }
+
+    Auth::login($user);
+
+    return redirect('/home');
+
+    // $user->token
+});
+
+
+Route::get('/auth/google', function () {
+    return Socialite::driver('google')->redirect();
+});
+
+Route::get('/callback/google', function () {
+    $googleUser = Socialite::driver('google')->user();
+    $user = User::where('email', $googleUser->getEmail())->first();
+    if ($user) {
+        $user->google_id = $googleUser->getId();
+        $user->google_token = $googleUser->token;
+        $user->google_refresh_token = $googleUser->refreshToken;
+        $user->save();
+    } else {
+        $user = new User();
+        $user->name = $googleUser->getName();
+        $user->email = $googleUser->getEmail();
+        $user->google_id = $googleUser->getId();
+        $user->password = Hash::make(Str::random(24));
+        $user->google_token = $googleUser->token;
+        $user->google_refresh_token = $googleUser->refreshToken;
+        $user->save();
+    }
+
+    Auth::login($user);
+
+    return redirect('/home');
+
+    // $user->token
+});

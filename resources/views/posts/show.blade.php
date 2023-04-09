@@ -7,6 +7,11 @@
         <div class="card-header">
             Title : {{$post->title}}
         </div>
+        @if( $post->image )
+            <div style="width: 100px; height: 100px " class="card-body">
+                <img src="{{ asset('storage/images/posts/' . $post->image) }}" class="card-img-top" alt="...">
+            </div>
+        @endif
         <div class="card-body">
             <p class="card-text">{{$post->content}}</p>
         </div>
